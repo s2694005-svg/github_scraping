@@ -17,11 +17,18 @@ print(soup.title.get_text())
 
 repos = soup.select('a[href^="/google/"]')
 
-print("取得した件数 : ", len(repos))
+repository_data = {}
 
 for repo in repos:
     href = repo.get("href", "")
     name = repo.get_text(strip=True)
 
-    if len(href.strip("/").split("/")) == 2 and name:
-        print(name)
+    parts =href.strip("/").split("/")
+
+    if len(parts) == 2 and name:
+        repository_data[parts[1]] = parts[1]
+
+print("リポジトリ数 : ", len(repository_data))
+
+for name in repository_data:
+    print(name)
