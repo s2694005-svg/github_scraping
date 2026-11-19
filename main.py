@@ -28,6 +28,16 @@ for repo in repos:
     if len(parts) == 2 and name:
         repository_data[parts[1]] = parts[1]
 
+    container = repo.parent.parent
+    text = (container.get_text(" ", strip=True))
+
+    for tag in container.find_all("span"):
+        text = tag.get_text(strip=True)
+
+        if text in ["C++", "Python", "Java", "Go", "JavaScript", "TypeScript", "Rust"]:
+            print("主要言語:", text)
+       
+
 print("リポジトリ数 : ", len(repository_data))
 
 for name in repository_data:
@@ -90,3 +100,4 @@ for name in repository_data:
 
         if "stars" in parent_text:
             print("スター数:", parent_text)
+
