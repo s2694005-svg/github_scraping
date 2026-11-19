@@ -15,9 +15,13 @@ soup = BeautifulSoup(response.text, "html.parser")
 
 print(soup.title.get_text())
 
-repos = soup.select('a[itemprop="name codeRepository"]')
+repos = soup.select('a[href^="/google/"]')
 
 print("取得した件数 : ", len(repos))
 
-for repo in repos[:10]:
-    print(repo.get_text(strip=True))
+for repo in repos:
+    href = repo.get("href", "")
+    name = repo.get_text(strip=True)
+
+    if len(href.strip("/").split("/")) == 2 and name:
+        print(name)
