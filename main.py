@@ -52,17 +52,41 @@ for name in repository_data:
     print("アクセス結果:", response.status_code)
     print("ページタイトル:", repo_soup.title.get_text(strip=True))
 
-    print("\n--- 言語情報 ---")
+    print("\n--- ページ確認 ---")
 
-    for tag in repo_soup.find_all("span"):
-        if tag.get("class") and "Progress-item" in tag.get("class"):
-            print("クラス:", tag.get("class"))
-            print("文字:", tag.get_text(strip=True))
+    print("URL:", response.url)
+    print("ステータス:", response.status_code)
+    print("タイトル:", repo_soup.title.get_text(strip=True))
 
-    print("\n--- Star情報 ---")
+    print("\n--- Star関連のHTML ---")
 
-    print("stargazersがHTMLにあるか:",
-          "starrazers" in response.text)
+    for tag in repo_soup.find_all(attrs={"aria-label": True}):
+        value = tag.get("aria-label", "")
+        if "star" in value.lower():
+            print(value)
+        
+    print("\n--- 言語関連のHTML ---")
 
-    print("starsがHTMLにあるか:",
-          "stars" in response.text.lower())
+    for tag in repo_soup.find_all(attrs={"data-testid": True}):
+        print(tag.get("data-testid"))
+
+    print("\n--- Star関連の数字 ---")
+
+    for tag in repo_soup.find_all(attrs={"aria-label": True}):
+        value = tag.get("aria-label", "")
+
+        if "star" in value.lower():
+            print("aria-label:", value)
+
+    for tag in repo_soup.find_all("a", href=True):
+        if "stargazers" in tag["href"]:
+            print("リンク:", tag.get_text(" ", strip=True))
+            print("URL:", tag["href"])
+
+    print("\n--- Strongタグの内容 ---")
+
+    for tag in repo_soup.find_all("strong"):
+        parent_text = tag.parent.get_text(" ", strip=True)
+
+        if "stars" in parent_text:
+            print("スター数:", parent_text)
