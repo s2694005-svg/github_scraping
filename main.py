@@ -37,8 +37,6 @@ print("\n--- 詳細情報 ---")
 
 for name in repository_data:
 
-    name = list(repository_data.keys())[0]
-
     repo_url = f"https://github.com/google/{name}"
 
     response = requests.get(
@@ -54,14 +52,17 @@ for name in repository_data:
     print("アクセス結果:", response.status_code)
     print("ページタイトル:", repo_soup.title.get_text(strip=True))
 
-    print("\n--- Star関連 ---")
+    print("\n--- 言語情報 ---")
 
-    for tag in repo_soup.find_all("a", href=True):
-        if "stargazers" in tag["href"]:
-            print(tag.get_text(strip=True), tag["href"])
+    for tag in repo_soup.find_all("span"):
+        if tag.get("class") and "Progress-item" in tag.get("class"):
+            print("クラス:", tag.get("class"))
+            print("文字:", tag.get_text(strip=True))
 
-    print("\n--- 言語関連 ---")
+    print("\n--- Star情報 ---")
 
-    for tag in repo_soup.find_all("a", href=True):
-        if "/search?l=" in tag["href"]:
-            print(tag.get_text(strip=True), tag["href"])
+    print("stargazersがHTMLにあるか:",
+          "starrazers" in response.text)
+
+    print("starsがHTMLにあるか:",
+          "stars" in response.text.lower())
