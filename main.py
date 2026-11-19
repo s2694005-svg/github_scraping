@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+import sqlite3
 
 url = "https://github.com/orgs/google/repositories"
 
@@ -26,7 +27,10 @@ for repo in repos:
     parts =href.strip("/").split("/")
 
     if len(parts) == 2 and name:
-        repository_data[parts[1]] = parts[1]
+        repository_data[parts[1]] = {
+            "language": None,
+            "stars": None
+        }
 
     container = repo.parent.parent
     text = (container.get_text(" ", strip=True))
@@ -35,6 +39,9 @@ for repo in repos:
         text = tag.get_text(strip=True)
 
         if text in ["C++", "Python", "Java", "Go", "JavaScript", "TypeScript", "Rust"]:
+            repository_data[parts[1]] = {
+                "language": text
+            }
             print("主要言語:", text)
        
 
@@ -75,11 +82,6 @@ for name in repository_data:
         if "star" in value.lower():
             print(value)
         
-    print("\n--- 言語関連のHTML ---")
-
-    for tag in repo_soup.find_all(attrs={"data-testid": True}):
-        print(tag.get("data-testid"))
-
     print("\n--- Star関連の数字 ---")
 
     for tag in repo_soup.find_all(attrs={"aria-label": True}):
@@ -99,5 +101,36 @@ for name in repository_data:
         parent_text = tag.parent.get_text(" ", strip=True)
 
         if "stars" in parent_text:
+            print(type(repository_data[name]), repository_data[name])
+            repository_data[name]["stars"] = parent_text
             print("スター数:", parent_text)
 
+conn = sqlite3.connect("github_data.db")
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS repositories (
+    name TEXT,
+    language TEXT,
+    stars TEXT
+)
+""")
+
+for name, data in repository_data.items():
+    cursor.execute(
+        "INSERT INTO repositories (name, language, stars) VALUES (?, ?, ?)",
+        (name, data["language"], data["stars"])
+    )
+
+conn.commit()
+
+cursor.execute("SELECT * FROM repositories")
+rows = cursor.fetchall()
+
+print("保存したデータ:")
+for row in rows:
+    print(row)
+
+conn.close()
+
+print("データベースに保存しました")
